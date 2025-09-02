@@ -4,7 +4,7 @@ import { initUI, showMenu, updateScoreUI, updateLevelUI, updateDeathsUI, showLev
 import { initInput, getAutoJumpState, togglePause } from './input.js';
 import { preRenderLevel, draw, resizeCanvas } from './renderer.js';
 import { updatePhysics, resetPlayer, getGameState, setGameState, getLevelStats, resetLevelStats, setTimeScaleTarget, die, completeLevel, resetCurrentLevelState, getTotalScore, awardBonus, resetScoreOnNewGame } from './physics.js';
-import { getPlayer, setPlayerSpeed, setPlayerSpeedNormalized, performPlayerJump, resetPlayerState } from './player.js';
+import { getPlayer, setPlayerSpeed, performPlayerJump, resetPlayerState } from './player.js';
 import { generateLevel, getGeneratedLevelData, setGeneratedLevelData } from './levelGenerator.js';
 import { snapCameraToPlayer } from './camera.js';
 
@@ -16,6 +16,7 @@ let lastTime = 0;
 let deltaTime = 0;
 
 let currentLevel = 1;
+let lastOnGround = false; // track ground state for auto-jump edge detection
 
 // ======================= ГЛАВНЫЕ ФУНКЦИИ УПРАВЛЕНИЯ ИГРОЙ =======================
 
@@ -23,7 +24,7 @@ async function startGame() {
     initAudio();
     currentLevel = 1;
     resetScoreOnNewGame();
-    setPlayerSpeedNormalized(BASE_SPEED, canvas.width);
+    setPlayerSpeed(BASE_SPEED);
     
     updateLevelUI(currentLevel);
     updateScoreUI(getTotalScore());
@@ -53,7 +54,7 @@ async function startNextLevel() {
     await fadeScreen(1, 400);
 
     currentLevel++;
-    setPlayerSpeedNormalized(BASE_SPEED + (currentLevel - 1) * 20, canvas.width);
+    setPlayerSpeed(BASE_SPEED + (currentLevel - 1) * 20);
     
     updateLevelUI(currentLevel);
     
@@ -82,7 +83,7 @@ async function restartCurrentLevel() {
     resetCurrentLevelState();
     updateScoreUI(getTotalScore());
     
-    setPlayerSpeedNormalized(BASE_SPEED + (currentLevel - 1) * 20, canvas.width);
+    setPlayerSpeed(BASE_SPEED + (currentLevel - 1) * 20);
     resetPlayerState(); // Сбрасываем эффекты игрока
     resetPlayer();
     snapCameraToPlayer();
@@ -160,6 +161,16 @@ function gameLoop(timestamp) {
     if (physicsResult.collected > 0) {
         updateScoreUI(getTotalScore());
     }
+
+    // Auto-jump when input is held: trigger on ground enter only
+    if (getGameState() === 'playing') {
+        if (getAutoJumpState() && player.onGround && !lastOnGround) {
+            performPlayerJump();
+        }
+        lastOnGround = player.onGround;
+    } else {
+        lastOnGround = false;
+    }
     
     if (levelData && levelData.teleport) {
         setPortalVolume(player, levelData.teleport, canvas.width);
@@ -200,7 +211,7 @@ initInput({
     onPause: togglePause
 });
 
-window.addEventListener('resize', () => { resizeCanvas(canvas); setPlayerSpeedNormalized(BASE_SPEED + (currentLevel - 1) * 20, canvas.width); });
+window.addEventListener('resize', () => resizeCanvas(canvas));
 document.addEventListener('fullscreenchange', () => resizeCanvas(canvas));
 document.addEventListener('webkitfullscreenchange', () => resizeCanvas(canvas));
 

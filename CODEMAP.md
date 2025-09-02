@@ -16,7 +16,7 @@ js/main.js
 - resumeGame(): продолжить из паузы
 - startGameplay(): первый старт движения на уровне
 - exitToMainMenu(): вернуться в главное меню
-- gameLoop(ts): кадр цикла; вызывает updatePhysics и draw
+- gameLoop(ts): кадр цикла; вызывает updatePhysics и draw; авто‑прыжок при удержании (по событию приземления)
 - resizeCanvas(canvas): делегирован в renderer
 - Инициализирует UI и Input; подписывается на resize/fullscreen
 
@@ -47,6 +47,7 @@ js/physics.js
 js/player.js
 - getPlayer(): объект игрока (позиция, скорость, размеры, эффекты)
 - setPlayerSpeed(speed)
+- setPlayerSpeedNormalized(baseSpeedPxPerSec, canvasWidth)
 - resetPlayerState(): сбрасывает эффекты и двойной прыжок
 - performPlayerJump(): логика прыжка/двойного прыжка
 - updatePlayer(scaledDt, activePlatforms): перемещение, коллизии, вращение, события приземления
@@ -64,7 +65,7 @@ js/camera.js
 
 js/input.js
 - initInput({ onJump, onResume, onPause }): подписка на события
-- getAutoJumpState(): тач-автопрыжок
+- getAutoJumpState(): флаг удержания (тач/ЛКМ)
 - togglePause(): пауза/возврат
 - playerJump(): вызвать прыжок по колбэку
 
@@ -75,6 +76,7 @@ js/ui.js
 - showLevelEndMenu(level, totalPixels, bonus)
 - fadeScreen(toOpacity, ms)
 - showStartBanner(level, totalPixels)
+- Кнопки Full Screen в меню паузы и конце уровня
 
 js/collectibles.js
 - createCollectible(typeName, x, y)

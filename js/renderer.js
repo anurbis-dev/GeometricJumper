@@ -7,6 +7,8 @@ import { drawCollectibles } from './collectibles.js';
 let preRenderedPlatformsCanvas = null;
 let swayTime = 0;
 let renderBuffer = 0;
+let portalGradient = null;
+let lastPortalTime = 0;
 
 const parallaxLayers = {
     sky: { speed: 0 },
@@ -187,10 +189,15 @@ function drawPortal(ctx, teleport, portalRings) {
     const centerX = teleport.x + teleport.width / 2;
     const centerY = teleport.y + teleport.height / 2;
     
-    const gradient = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, teleport.width * 0.7);
-    gradient.addColorStop(0, `rgba(220, 240, 255, ${0.6 + Math.sin(performance.now() / 200) * 0.2})`);
-    gradient.addColorStop(1, `rgba(52, 152, 219, 0)`);
-    ctx.fillStyle = gradient;
+    // Cache gradient and only update every 100ms for performance
+    const currentTime = performance.now();
+    if (!portalGradient || currentTime - lastPortalTime > 100) {
+        portalGradient = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, teleport.width * 0.7);
+        portalGradient.addColorStop(0, `rgba(220, 240, 255, ${0.6 + Math.sin(currentTime / 200) * 0.2})`);
+        portalGradient.addColorStop(1, `rgba(52, 152, 219, 0)`);
+        lastPortalTime = currentTime;
+    }
+    ctx.fillStyle = portalGradient;
     ctx.fillRect(teleport.x, teleport.y, teleport.width, teleport.height);
 
     if (portalRings.length > 0) {
@@ -247,37 +254,61 @@ function drawTreeOrBush(ctx, el, levelColorHue) {
     ctx.rotate(sway);
     const crownRadius = el.height * (el.type === 'tree' ? 0.4 : 0.8);
     const leafBaseHue = 120 + (levelColorHue - 195) / 3;
-    for (let r = 0; r < crownRadius; r += 5) {
-        const leavesInRing = Math.max(1, 15 - r / 4);
-        for (let i = 0; i < leavesInRing; i++) {
-            const distFromCenter = r + Math.random() * 10; if (distFromCenter > crownRadius) continue;
-            const angle = Math.random() * Math.PI * 2;
-            const offsetX = Math.cos(angle) * distFromCenter;
-            const offsetY = Math.sin(angle) * distFromCenter * (el.type === 'tree' ? 0.7 : 1.0) - (el.type === 'tree' ? crownRadius * 0.5 : 0);
-            const sizeFactor = 1 - (distFromCenter / crownRadius);
-            const leafSizeX = (10 + 15 * sizeFactor) * (0.8 + Math.random() * 0.4);
-            const leafSizeY = (15 + 25 * sizeFactor) * (0.8 + Math.random() * 0.4);
-            const leafSway = Math.sin(swayTime * 0.04 + i + r) * 0.05;
-            ctx.fillStyle = `hsla(${leafBaseHue + Math.random()*20 - 10}, 60%, ${40 + sizeFactor * 20}%, ${0.6 + sizeFactor * 0.4})`;
-            ctx.beginPath(); ctx.ellipse(offsetX, offsetY, leafSizeX, leafSizeY, leafSway, 0, Math.PI * 2); ctx.fill();
+    
+    // Pre-generate leaf positions for performance (only if not cached)
+    if (!el.cachedLeaves) {
+        el.cachedLeaves = [];
+        for (let r = 0; r < crownRadius; r += 5) {
+            const leavesInRing = Math.max(1, 15 - r / 4);
+            for (let i = 0; i < leavesInRing; i++) {
+                const distFromCenter = r + Math.random() * 10; 
+                if (distFromCenter > crownRadius) continue;
+                const angle = Math.random() * Math.PI * 2;
+                const offsetX = Math.cos(angle) * distFromCenter;
+                const offsetY = Math.sin(angle) * distFromCenter * (el.type === 'tree' ? 0.7 : 1.0) - (el.type === 'tree' ? crownRadius * 0.5 : 0);
+                const sizeFactor = 1 - (distFromCenter / crownRadius);
+                const leafSizeX = (10 + 15 * sizeFactor) * (0.8 + Math.random() * 0.4);
+                const leafSizeY = (15 + 25 * sizeFactor) * (0.8 + Math.random() * 0.4);
+                const leafHue = leafBaseHue + Math.random()*20 - 10;
+                el.cachedLeaves.push({ offsetX, offsetY, leafSizeX, leafSizeY, leafHue, sizeFactor });
+            }
         }
     }
+    
+    // Draw cached leaves
+    el.cachedLeaves.forEach((leaf, i) => {
+        const leafSway = Math.sin(swayTime * 0.04 + i) * 0.05;
+        ctx.fillStyle = `hsla(${leaf.leafHue}, 60%, ${40 + leaf.sizeFactor * 20}%, ${0.6 + leaf.sizeFactor * 0.4})`;
+        ctx.beginPath(); 
+        ctx.ellipse(leaf.offsetX, leaf.offsetY, leaf.leafSizeX, leaf.leafSizeY, leafSway, 0, Math.PI * 2); 
+        ctx.fill();
+    });
     ctx.restore();
 }
 
 function drawGrassOnPlatform(p, color, targetCtx, currentSwayTime) {
     const grassCount = p.width / 6;
     targetCtx.fillStyle = color;
-    for (let i = 0; i < grassCount; i++) {
-        const grassX = p.x + i * 6 + Math.random() * 3;
-        const grassHeight = 8 + Math.random() * 12;
-        const sway = Math.sin(currentSwayTime + grassX / 20) * (grassHeight / 4);
+    
+    // Pre-generate grass positions for performance (only if not cached)
+    if (!p.cachedGrass) {
+        p.cachedGrass = [];
+        for (let i = 0; i < grassCount; i++) {
+            const grassX = p.x + i * 6 + Math.random() * 3;
+            const grassHeight = 8 + Math.random() * 12;
+            p.cachedGrass.push({ grassX, grassHeight });
+        }
+    }
+    
+    // Draw cached grass
+    p.cachedGrass.forEach(grass => {
+        const sway = Math.sin(currentSwayTime + grass.grassX / 20) * (grass.grassHeight / 4);
         targetCtx.beginPath();
-        targetCtx.moveTo(grassX - 1.5, p.y);
-        targetCtx.lineTo(grassX + 1.5, p.y);
-        targetCtx.lineTo(grassX + sway, p.y - grassHeight);
+        targetCtx.moveTo(grass.grassX - 1.5, p.y);
+        targetCtx.lineTo(grass.grassX + 1.5, p.y);
+        targetCtx.lineTo(grass.grassX + sway, p.y - grass.grassHeight);
         targetCtx.closePath();
         targetCtx.fill();
-    }
+    });
 }
 

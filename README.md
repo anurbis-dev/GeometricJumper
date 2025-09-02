@@ -8,8 +8,9 @@ How to run
 
 Controls
 - Click / Tap / Space: Jump
+- Hold Left Mouse / Hold Touch: Auto-jump (jumps on each landing)
 - Right click / Menu icon / Esc: Pause
-- Two-finger pinch: Enter/exit fullscreen
+- Full Screen: use the "Full Screen" button in pause or end-level menu
 
 Project structure
 - `index.html`: entry HTML, mounts canvas and UI overlays, loads `js/main.js` (module)
@@ -40,4 +41,5 @@ Development
 Notes
 - Mobile friendly; responsive canvas with 16:9 aspect.
 - Procedural levels, escalating difficulty, per-level scoring, bonuses.
+- Normalized player speed by canvas width to keep pace consistent across devices.
 
