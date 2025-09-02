@@ -28,6 +28,18 @@ export function setPlayerSpeed(speed) {
 }
 
 /**
+ * Sets player speed normalized to canvas width so that perceived speed
+ * (in screen widths per second) is consistent across devices.
+ * @param {number} baseSpeedPxPerSec - Base speed at reference width (1280px).
+ * @param {number} canvasWidth - Current canvas width in pixels.
+ */
+export function setPlayerSpeedNormalized(baseSpeedPxPerSec, canvasWidth) {
+    const referenceWidth = 1280;
+    const scale = Math.max(0.6, Math.min(1.6, canvasWidth / referenceWidth));
+    player.dx = baseSpeedPxPerSec * scale;
+}
+
+/**
  * Сбрасывает эффекты и состояние прыжков игрока.
  */
 export function resetPlayerState() {

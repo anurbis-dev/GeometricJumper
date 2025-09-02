@@ -86,6 +86,19 @@ export function initUI(callbacks) {
     setupButton('play-button', callbacks.onPlay);
     setupButton('exit-button', callbacks.onExit);
     setupButton('resume-button', callbacks.onResume);
+    // Fullscreen buttons in pause and level end menus
+    const toggleFull = () => {
+        const elem = document.documentElement;
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+    };
+    setupButton('fullscreen-toggle-button', toggleFull);
+    setupButton('fullscreen-toggle-button-end', toggleFull);
     setupButton('restart-level-button', callbacks.onRestart);
     setupButton('exit-to-main-menu-pause-button', callbacks.onExitToMain);
     setupButton('exit-to-main-menu-end-button', callbacks.onExitToMain);

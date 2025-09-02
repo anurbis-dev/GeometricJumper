@@ -4,7 +4,7 @@ import { initUI, showMenu, updateScoreUI, updateLevelUI, updateDeathsUI, showLev
 import { initInput, getAutoJumpState, togglePause } from './input.js';
 import { preRenderLevel, draw, resizeCanvas } from './renderer.js';
 import { updatePhysics, resetPlayer, getGameState, setGameState, getLevelStats, resetLevelStats, setTimeScaleTarget, die, completeLevel, resetCurrentLevelState, getTotalScore, awardBonus, resetScoreOnNewGame } from './physics.js';
-import { getPlayer, setPlayerSpeed, performPlayerJump, resetPlayerState } from './player.js';
+import { getPlayer, setPlayerSpeed, setPlayerSpeedNormalized, performPlayerJump, resetPlayerState } from './player.js';
 import { generateLevel, getGeneratedLevelData, setGeneratedLevelData } from './levelGenerator.js';
 import { snapCameraToPlayer } from './camera.js';
 
@@ -23,7 +23,7 @@ async function startGame() {
     initAudio();
     currentLevel = 1;
     resetScoreOnNewGame();
-    setPlayerSpeed(BASE_SPEED);
+    setPlayerSpeedNormalized(BASE_SPEED, canvas.width);
     
     updateLevelUI(currentLevel);
     updateScoreUI(getTotalScore());
@@ -53,7 +53,7 @@ async function startNextLevel() {
     await fadeScreen(1, 400);
 
     currentLevel++;
-    setPlayerSpeed(BASE_SPEED + (currentLevel - 1) * 20);
+    setPlayerSpeedNormalized(BASE_SPEED + (currentLevel - 1) * 20, canvas.width);
     
     updateLevelUI(currentLevel);
     
@@ -82,7 +82,7 @@ async function restartCurrentLevel() {
     resetCurrentLevelState();
     updateScoreUI(getTotalScore());
     
-    setPlayerSpeed(BASE_SPEED + (currentLevel - 1) * 20);
+    setPlayerSpeedNormalized(BASE_SPEED + (currentLevel - 1) * 20, canvas.width);
     resetPlayerState(); // Сбрасываем эффекты игрока
     resetPlayer();
     snapCameraToPlayer();
@@ -200,7 +200,7 @@ initInput({
     onPause: togglePause
 });
 
-window.addEventListener('resize', () => resizeCanvas(canvas));
+window.addEventListener('resize', () => { resizeCanvas(canvas); setPlayerSpeedNormalized(BASE_SPEED + (currentLevel - 1) * 20, canvas.width); });
 document.addEventListener('fullscreenchange', () => resizeCanvas(canvas));
 document.addEventListener('webkitfullscreenchange', () => resizeCanvas(canvas));
 

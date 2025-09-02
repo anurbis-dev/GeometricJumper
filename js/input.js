@@ -7,7 +7,9 @@ let onPauseCallback;
 let isAutoJumping = false;
 let touchCache = [];
 let prevDiff = -1;
-let twoFingerHandled = false; // prevents multiple fullscreen toggles per gesture
+// Remove fullscreen gesture handling and auto-orientation fullscreen
+// as per updated requirements
+let twoFingerHandled = false;
 let orientationListenerAttached = false;
 
 export function playerJump() {
@@ -71,13 +73,16 @@ function handlePointerDown(e) {
             playerJump();
         }
     } else if (e.pointerType === 'mouse' && e.button === 0) {
+        // Mouse hold should behave as auto-jump
+        isAutoJumping = true;
         if (getGameState() === 'playing') playerJump();
     }
 }
 
 function handlePointerUp(e) {
     e.preventDefault();
-    if (e.pointerType === 'touch' && e.isPrimary) {
+    // Stop auto-jump on release for both touch and mouse
+    if ((e.pointerType === 'touch' && e.isPrimary) || (e.pointerType === 'mouse' && e.button === 0)) {
         isAutoJumping = false;
     }
 }
@@ -99,12 +104,7 @@ function handleTouchStart(e) {
         touchCache.push(e.changedTouches[i]);
     }
 
-    // Two-finger fullscreen toggle (once per gesture)
-    if (touchCache.length >= 2 && !twoFingerHandled) {
-        twoFingerHandled = true;
-        const shouldEnter = !document.fullscreenElement;
-        toggleFullScreen(shouldEnter);
-    }
+    // Fullscreen gestures removed
 }
 
 function handleTouchMove(e) {
@@ -113,23 +113,7 @@ function handleTouchMove(e) {
         const index = touchCache.findIndex(t => t.identifier === e.touches[i].identifier);
         if (index !== -1) touchCache[index] = e.touches[i];
     }
-    if (touchCache.length === 2) {
-        // Optional pinch handling with hysteresis and debounced by twoFingerHandled
-        const curDiff = Math.hypot(
-            touchCache[0].clientX - touchCache[1].clientX,
-            touchCache[0].clientY - touchCache[1].clientY
-        );
-        if (prevDiff > 0 && !twoFingerHandled) {
-            if (curDiff > prevDiff + 20) { // widen threshold to avoid noise
-                toggleFullScreen(true);
-                twoFingerHandled = true;
-            } else if (curDiff < prevDiff - 20) {
-                toggleFullScreen(false);
-                twoFingerHandled = true;
-            }
-        }
-        prevDiff = curDiff;
-    }
+    // Fullscreen pinch handling removed
 }
 
 function handleTouchEnd(e) {
@@ -139,7 +123,7 @@ function handleTouchEnd(e) {
         if (index !== -1) touchCache.splice(index, 1);
     }
     if (touchCache.length < 2) prevDiff = -1;
-    if (touchCache.length < 2) twoFingerHandled = false; // reset for next gesture
+    if (touchCache.length < 2) twoFingerHandled = false;
 }
 
 
@@ -157,19 +141,6 @@ export function initInput(callbacks) {
     gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
     gameContainer.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
-    // Auto-enter fullscreen on landscape orientation
-    if (!orientationListenerAttached) {
-        orientationListenerAttached = true;
-        const onOrientationChange = () => {
-            const isLandscape = window.matchMedia && window.matchMedia('(orientation: landscape)').matches;
-            if (isLandscape && !document.fullscreenElement) {
-                toggleFullScreen(true);
-            }
-        };
-        window.addEventListener('orientationchange', onOrientationChange);
-        if (window.matchMedia) {
-            try { window.matchMedia('(orientation: landscape)').addEventListener('change', onOrientationChange); } catch (_) {}
-        }
-    }
+    // Removed auto fullscreen on orientation change
 }
 
