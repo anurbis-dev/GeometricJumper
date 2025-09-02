@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Геометрический Прыгун v16 (Модульная версия)</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="fade-overlay" class="overlay"></div>
+        <div id="pause-overlay" class="overlay"></div>
+        <div id="start-prompt" class="hidden">Нажмите, чтобы начать</div>
+        
+        <div id="ui-container">
+            <div>
+                <span id="score">Очки: 0</span><br>
+                <span id="level">Уровень: 1</span><br>
+                <span id="deaths">Попытки: 0</span>
+            </div>
+        </div>
+        
+        <div id="menu-icon">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+
+        <div id="instructions">
+            Клик/Тап - прыжок. 2 пальца - полный экран. ПКМ/Иконка меню - пауза.
+        </div>
+        
+        <div id="main-menu" class="menu-overlay">
+            <div class="menu-box">
+                <h1>Геометрический Прыгун</h1>
+                <button id="play-button">Играть</button>
+                <button id="exit-button" class="exit-button">Выйти</button>
+            </div>
+        </div>
+
+        <div id="pause-menu" class="menu-overlay hidden">
+            <div class="menu-box">
+                <h1>Пауза</h1>
+                <button id="resume-button">Продолжить</button>
+                <button id="restart-level-button">Начать заново</button>
+                <button id="exit-to-main-menu-pause-button" class="exit-button">Выйти в главное меню</button>
+            </div>
+        </div>
+
+        <div id="level-start-banner" class="menu-overlay hidden" style="background-color: rgba(0,0,0,0.5);">
+             <div class="menu-box">
+                <h1 id="level-banner-title">Уровень 1</h1>
+                <p id="level-banner-pixels">Собрать пикселей: 0</p>
+            </div>
+        </div>
+        
+        <div id="level-end-menu" class="menu-overlay hidden">
+            <div class="menu-box">
+                <h1 id="level-end-title">Уровень пройден!</h1>
+                <div class="stats-grid">
+                    <span>Время:</span><span id="level-time-stat">0.0s</span>
+                    <span>Собрано пикселей:</span><span id="level-pixels-stat">0 / 0</span>
+                    <span>Погибаний:</span><span id="level-deaths-stat">0</span>
+                    <span>Бонус:</span><span id="level-bonus-stat">0</span>
+                </div>
+                <button id="continue-button">Продолжить</button>
+                <button id="replay-level-button">Переиграть уровень</button>
+                <button id="exit-to-main-menu-end-button" class="exit-button">Выйти в главное меню</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <script src="js/main.js" type="module"></script>
+</body>
+</html>

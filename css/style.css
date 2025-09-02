@@ -1,0 +1,212 @@
+/* --- ОБЩИE СТИЛИ СТРАНИЦЫ --- */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a2e; /* Темно-синий фон */
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Consolas', 'Courier New', monospace; /* Моноширинный шрифт в стиле ретро */
+    overflow: hidden; /* Скрываем прокрутку */
+    touch-action: none; /* Отключаем стандартные жесты браузера (зум, скролл) */
+}
+
+/* --- КОНТЕЙНЕР ИГРЫ --- */
+#game-container {
+    width: 100%;
+    max-width: 1200px; /* Максимальная ширина игрового поля */
+    aspect-ratio: 16 / 9; /* Сохраняем соотношение сторон */
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); /* Тень для глубины */
+    border-radius: 15px; /* Скругленные углы */
+    overflow: hidden; /* Все, что выходит за пределы, обрезается */
+    position: relative; /* Для позиционирования дочерних элементов (меню, UI) */
+}
+
+/* --- ИГРОВОЕ ПОЛЕ (CANVAS) --- */
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: #2c3e50; /* Фоновый цвет самого холста */
+}
+
+/* --- ИНТЕРФЕЙС ВНУТРИ ИГРЫ (СЧЕТ, УРОВЕНЬ) --- */
+#ui-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: clamp(10px, 2vmin, 2em); /* Адаптивный размер шрифта */
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7); /* Тень для читаемости текста */
+    pointer-events: none; /* UI не перехватывает клики мыши */
+    z-index: 5;
+}
+
+/* --- ИКОНКА МЕНЮ --- */
+#menu-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: clamp(25px, 4vmin, 40px);
+    height: clamp(20px, 3vmin, 30px);
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#menu-icon .bar {
+    width: 100%;
+    height: clamp(3px, 0.5vmin, 5px);
+    background-color: white;
+    border-radius: 2px;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+
+/* --- СТИЛИ ДЛЯ ПЕРЕХОДОВ И ОВЕРЛЕЕВ --- */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
+#pause-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(0px);
+    z-index: 25;
+}
+
+
+#start-prompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(16px, 4vmin, 2.5em);
+    color: #fff;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+    pointer-events: none;
+    z-index: 21;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+
+/* --- ПОДСКАЗКИ ДЛЯ ИГРОКА --- */
+#instructions {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: clamp(10px, 1.8vmin, 1.2em);
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    pointer-events: none;
+}
+
+/* --- СТИЛИ ДЛЯ МЕНЮ (ПАУЗА, КОНЕЦ УРОВНЯ) --- */
+.menu-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 30; /* Меню всегда поверх всего */
+}
+
+.menu-box {
+    background-color: #2c3e50;
+    padding: 5vmin;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    text-align: center;
+    border: 2px solid #4a6a8a;
+    width: 80%;
+    max-width: 500px;
+}
+
+.menu-box h1 {
+    margin-top: 0;
+    font-size: clamp(20px, 5vmin, 2.5em);
+    color: #ecf0f1;
+}
+
+.menu-box p {
+     font-size: clamp(14px, 3vmin, 1.5em);
+     color: #bdc3c7;
+}
+
+.menu-box button {
+    background-color: #3498db; /* Синий цвет кнопок */
+    color: white;
+    border: none;
+    padding: 2vmin 4vmin;
+    margin: 1.5vmin;
+    font-size: clamp(12px, 3vmin, 1.2em);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    width: 90%;
+    max-width: 300px;
+}
+
+.menu-box button:hover {
+    background-color: #2980b9; /* Затемнение при наведении */
+}
+
+.menu-box button:active {
+    transform: scale(0.98); /* Небольшое сжатие при нажатии */
+}
+
+.menu-box .exit-button {
+    background-color: #e74c3c; /* Красный для кнопок выхода */
+}
+
+.menu-box .exit-button:hover {
+    background-color: #c0392b;
+}
+
+/* Стили для отображения статистики в конце уровня */
+.stats-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5vmin 3vmin;
+    text-align: left;
+    margin: 3vmin 0;
+    font-size: clamp(12px, 2.5vmin, 1.2em);
+    color: #bdc3c7;
+}
+
+.stats-grid span:nth-child(odd) {
+    font-weight: bold;
+    color: #ecf0f1;
+}
+
+.bonus-stat {
+    color: #2ecc71; /* Зеленый цвет для бонуса */
+    font-weight: bold;
+}
+
+/* Класс для скрытия элементов */
+.hidden {
+    display: none;
+}
