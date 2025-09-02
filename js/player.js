@@ -51,7 +51,12 @@ export function performPlayerJump() {
         player.dy = JUMP_FORCE;
         player.onGround = false;
         player.jumpsLeft--;
-        playJumpSound();
+        
+        // Debounce jump sound to prevent spam
+        if (!player.lastJumpTime || performance.now() - player.lastJumpTime > 50) {
+            playJumpSound();
+            player.lastJumpTime = performance.now();
+        }
     }
 }
 
@@ -82,11 +87,23 @@ export function updatePlayer(scaledDt, activePlatforms) {
     let onSolidGround = false;
     if (player.flashTime > 0) player.flashTime -= scaledDt * 60;
 
-    activePlatforms.forEach(platform => {
-        if (player.x + player.width > platform.x && player.x < platform.x + platform.width) {
-            const collisionSide = player.x + player.width >= platform.x && player.x + player.width < platform.x + (player.dx * scaledDt) + 1;
-            if (player.dx > 0 && collisionSide && player.y + player.height > platform.y && player.y < platform.y + platform.height) {
-                 const ledgeHeight = (player.y + player.height) - platform.y;
+    // Optimized collision detection - only check platforms near player
+    const playerLeft = player.x;
+    const playerRight = player.x + player.width;
+    const playerBottom = player.y + player.height;
+    
+    for (let i = 0; i < activePlatforms.length; i++) {
+        const platform = activePlatforms[i];
+        
+        // Early exit if platform is too far away
+        if (platform.x > playerRight + 50 || platform.x + platform.width < playerLeft - 50) {
+            continue;
+        }
+        
+        if (playerRight > platform.x && playerLeft < platform.x + platform.width) {
+            const collisionSide = playerRight >= platform.x && playerRight < platform.x + (player.dx * scaledDt) + 1;
+            if (player.dx > 0 && collisionSide && playerBottom > platform.y && player.y < platform.y + platform.height) {
+                 const ledgeHeight = playerBottom - platform.y;
                  if (ledgeHeight > 0 && ledgeHeight < player.height / 2 && player.dy >= 0) {
                     player.y = platform.y - player.height;
                     player.dy = -120;
@@ -96,7 +113,7 @@ export function updatePlayer(scaledDt, activePlatforms) {
                     collisionResult.hasDied = true;
                  }
             }
-            if (player.dy >= 0 && player.y + player.height >= platform.y && player.y + player.height < platform.y + platform.height + (player.dy * scaledDt)) {
+            if (player.dy >= 0 && playerBottom >= platform.y && playerBottom < platform.y + platform.height + (player.dy * scaledDt)) {
                 player.y = platform.y - player.height;
                 player.dy = 0;
                 onSolidGround = true;
@@ -107,7 +124,7 @@ export function updatePlayer(scaledDt, activePlatforms) {
                  player.dy = 0;
             }
         }
-    });
+    }
     
     player.onGround = onSolidGround;
     
@@ -118,7 +135,11 @@ export function updatePlayer(scaledDt, activePlatforms) {
     }
 
     if (player.onGround && !player.wasOnGround) {
-        playLandSound();
+        // Debounce landing sound to prevent spam
+        if (!player.lastLandTime || performance.now() - player.lastLandTime > 100) {
+            playLandSound();
+            player.lastLandTime = performance.now();
+        }
         collisionResult.landed = true;
         player.jumpsLeft = 2;
     }

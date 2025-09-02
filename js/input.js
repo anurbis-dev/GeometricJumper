@@ -82,7 +82,9 @@ function handlePointerDown(e) {
 function handlePointerUp(e) {
     e.preventDefault();
     // Stop auto-jump on release for both touch and mouse
-    if ((e.pointerType === 'touch' && e.isPrimary) || (e.pointerType === 'mouse' && e.button === 0)) {
+    if (e.pointerType === 'touch' && e.isPrimary) {
+        isAutoJumping = false;
+    } else if (e.pointerType === 'mouse' && e.button === 0) {
         isAutoJumping = false;
     }
 }
