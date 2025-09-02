@@ -1,5 +1,6 @@
 import { getPlayer } from './player.js';
 import { playCollectSoundYellow, playCollectSoundOrange, playCollectSoundPurple, playCollectSoundRed, playCollectModifierSound } from './audio.js';
+import { getAssetWithFallback, hasAssets } from './assetLoader.js';
 
 // --- Определение типов коллекционных предметов ---
 
@@ -7,10 +8,15 @@ const PIXEL_YELLOW = {
     id: 'pixel_yellow',
     size: 8,
     draw: (ctx, c) => {
-        ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffff00';
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        const image = getAssetWithFallback('pixel_yellow');
+        if (hasAssets() && image) {
+            ctx.drawImage(image, c.x - image.width / 2, c.y - image.height / 2);
+        } else {
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        }
     },
     onCollect: (player, offset) => {
         player.flashTime = 10;
@@ -23,10 +29,15 @@ const PIXEL_ORANGE = {
     id: 'pixel_orange',
     size: 9,
     draw: (ctx, c) => {
-        ctx.fillStyle = 'rgba(255, 165, 0, 0.2)';
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffa500';
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        const image = getAssetWithFallback('pixel_orange');
+        if (hasAssets() && image) {
+            ctx.drawImage(image, c.x - image.width / 2, c.y - image.height / 2);
+        } else {
+            ctx.fillStyle = 'rgba(255, 165, 0, 0.2)';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffa500';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        }
     },
     onCollect: (player, offset) => {
         player.flashTime = 10;
@@ -39,10 +50,15 @@ const PIXEL_PURPLE = {
     id: 'pixel_purple',
     size: 10,
     draw: (ctx, c) => {
-        ctx.fillStyle = 'rgba(128, 0, 128, 0.3)';
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#800080';
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        const image = getAssetWithFallback('pixel_purple');
+        if (hasAssets() && image) {
+            ctx.drawImage(image, c.x - image.width / 2, c.y - image.height / 2);
+        } else {
+            ctx.fillStyle = 'rgba(128, 0, 128, 0.3)';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#800080';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        }
     },
     onCollect: (player, offset) => {
         player.flashTime = 10;
@@ -55,11 +71,19 @@ const PIXEL_RED = {
     id: 'pixel_red',
     size: 12,
     draw: (ctx, c) => {
-        const alpha = 0.4 + (Math.sin(performance.now() / 150) + 1) * 0.3;
-        ctx.fillStyle = `rgba(255, 0, 0, ${alpha * 0.5})`;
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 1.8, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        const image = getAssetWithFallback('pixel_red');
+        if (hasAssets() && image) {
+            const alpha = 0.4 + (Math.sin(performance.now() / 150) + 1) * 0.3;
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(image, c.x - image.width / 2, c.y - image.height / 2);
+            ctx.globalAlpha = 1;
+        } else {
+            const alpha = 0.4 + (Math.sin(performance.now() / 150) + 1) * 0.3;
+            ctx.fillStyle = `rgba(255, 0, 0, ${alpha * 0.5})`;
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size * 1.8, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        }
     },
     onCollect: (player, offset) => {
         player.flashTime = 10;
@@ -72,16 +96,28 @@ const MODIFIER_MAGNET = {
     id: 'modifier_magnet',
     size: 14,
     draw: (ctx, c) => {
-        const alpha = 0.5 + (Math.sin(performance.now() / 200) + 1) * 0.25;
-        ctx.save();
-        ctx.translate(c.x, c.y);
-        ctx.rotate(performance.now() / 1000);
-        ctx.strokeStyle = `rgba(255, 255, 0, ${alpha})`;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(-c.size / 2, -c.size / 2, c.size, c.size);
-        ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.3})`;
-        ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
-        ctx.restore();
+        const image = getAssetWithFallback('modifier_magnet');
+        if (hasAssets() && image) {
+            const alpha = 0.5 + (Math.sin(performance.now() / 200) + 1) * 0.25;
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(performance.now() / 1000);
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(image, -image.width / 2, -image.height / 2);
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        } else {
+            const alpha = 0.5 + (Math.sin(performance.now() / 200) + 1) * 0.25;
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(performance.now() / 1000);
+            ctx.strokeStyle = `rgba(255, 255, 0, ${alpha})`;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-c.size / 2, -c.size / 2, c.size, c.size);
+            ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.3})`;
+            ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+            ctx.restore();
+        }
     },
     onCollect: (player, offset) => {
         player.effects.magnetTimer += 7;
@@ -94,16 +130,28 @@ const MODIFIER_DOUBLE_JUMP = {
     id: 'modifier_double_jump',
     size: 14,
     draw: (ctx, c) => {
-        const alpha = 0.5 + (Math.sin(performance.now() / 200) + 1) * 0.25;
-        ctx.save();
-        ctx.translate(c.x, c.y);
-        ctx.rotate(performance.now() / 1000);
-        ctx.strokeStyle = `rgba(0, 191, 255, ${alpha})`;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(-c.size / 2, -c.size / 2, c.size, c.size);
-        ctx.fillStyle = `rgba(0, 191, 255, ${alpha * 0.3})`;
-        ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
-        ctx.restore();
+        const image = getAssetWithFallback('modifier_double_jump');
+        if (hasAssets() && image) {
+            const alpha = 0.5 + (Math.sin(performance.now() / 200) + 1) * 0.25;
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(performance.now() / 1000);
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(image, -image.width / 2, -image.height / 2);
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        } else {
+            const alpha = 0.5 + (Math.sin(performance.now() / 200) + 1) * 0.25;
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(performance.now() / 1000);
+            ctx.strokeStyle = `rgba(0, 191, 255, ${alpha})`;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-c.size / 2, -c.size / 2, c.size, c.size);
+            ctx.fillStyle = `rgba(0, 191, 255, ${alpha * 0.3})`;
+            ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+            ctx.restore();
+        }
     },
     onCollect: (player, offset) => {
         player.effects.doubleJumpTimer += 10;

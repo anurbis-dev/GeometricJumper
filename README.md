@@ -15,9 +15,15 @@ Controls
 Project structure
 - `index.html`: entry HTML, mounts canvas and UI overlays, loads `js/main.js` (module)
 - `css/style.css`: layout, overlays, menus, typography
+- `assets/`: PNG image assets organized by category
+  - `player/`: player character sprites
+  - `collectibles/`: collectible items and modifiers
+  - `platforms/`: platform graphics
+  - `backgrounds/`: parallax background elements
 - `js/` modules:
   - `main.js`: bootstraps systems, game loop, level flow
   - `constants.js`: gameplay constants
+  - `assetLoader.js`: PNG asset loading system with fallback
   - `renderer.js`: camera-aware rendering, pre-rendered platforms, parallax, player/portal draw
   - `physics.js`: game state machine, time scale, collisions, respawn, scoring
   - `player.js`: player state/controls/physics integration
@@ -30,9 +36,11 @@ Project structure
     - `audio/sfx.js`: sound effects
     - `audio/music/proceduralMusic.js`: music generation via Tone.js
   - `collectibles.js`: collectibles logic and modifiers
+- `generate_assets.html`: tool for generating basic PNG assets
+- `ASSETS.md`: detailed documentation for the asset system
 
 Tech stack
-- Canvas 2D, ES Modules, Tone.js for audio.
+- Canvas 2D, ES Modules, Tone.js for audio, PNG asset system with fallback.
 
 Development
 - Open `index.html` with a local server for better module/file access (optional).
@@ -42,4 +50,12 @@ Notes
 - Mobile friendly; responsive canvas with 16:9 aspect.
 - Procedural levels, escalating difficulty, per-level scoring, bonuses.
 - Normalized player speed by canvas width to keep pace consistent across devices.
+- PNG asset system with automatic fallback to programmatic graphics.
+- Asset generation tool included for creating custom graphics.
+
+Asset System
+- Use `generate_assets.html` to create basic PNG assets
+- Place custom PNG files in the `assets/` folder structure
+- System automatically falls back to programmatic graphics if assets are missing
+- See `ASSETS.md` for detailed documentation
 

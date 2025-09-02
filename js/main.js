@@ -7,6 +7,7 @@ import { updatePhysics, resetPlayer, getGameState, setGameState, getLevelStats, 
 import { getPlayer, setPlayerSpeed, performPlayerJump, resetPlayerState } from './player.js';
 import { generateLevel, getGeneratedLevelData, setGeneratedLevelData } from './levelGenerator.js';
 import { snapCameraToPlayer } from './camera.js';
+import { initAssets } from './assetLoader.js';
 
 // ======================= ИНИЦИАЛИЗАЦИЯ =======================
 const canvas = document.getElementById('gameCanvas');
@@ -22,6 +23,15 @@ let lastOnGround = false; // track ground state for auto-jump edge detection
 
 async function startGame() {
     initAudio();
+    
+    // Initialize assets loading
+    try {
+        await initAssets();
+        console.log('Assets loaded successfully');
+    } catch (error) {
+        console.log('Assets loading failed, using fallback graphics');
+    }
+    
     currentLevel = 1;
     resetScoreOnNewGame();
     setPlayerSpeed(BASE_SPEED);
